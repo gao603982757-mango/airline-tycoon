@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>天空帝国 · 虚拟航空大亨</title>
+<style>
+:root{
+  --bg:#0a0f1e; --bg2:#0f1830; --panel:#121d38; --panel2:#16244a;
+  --line:#22335f; --txt:#e8eefc; --dim:#8da2c8; --accent:#36d1dc; --accent2:#5b86e5;
+  --good:#3ddc84; --bad:#ff6b6b; --warn:#ffd166; --gold:#ffcc66;
+  --shadow:0 8px 30px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:radial-gradient(1200px 600px at 70% -10%,#15244a 0%,var(--bg) 55%);
+  color:var(--txt); overflow-x:hidden;
+}
+button{font-family:inherit;cursor:pointer;border:none;outline:none}
+.btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04122a;font-weight:700;
+  padding:8px 14px;border-radius:10px;font-size:13px;transition:.15s;box-shadow:0 4px 14px rgba(54,209,220,.25)}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;filter:none}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--txt);box-shadow:none}
+.btn.ghost:hover{border-color:var(--accent);background:rgba(54,209,220,.08)}
+.btn.danger{background:linear-gradient(135deg,#ff7a7a,#ff5252);color:#fff}
+.btn.sm{padding:5px 10px;font-size:12px;border-radius:8px}
+/* Header */
+header{position:sticky;top:0;z-index:50;backdrop-filter:blur(8px);
+  background:linear-gradient(180deg,rgba(10,15,30,.95),rgba(10,15,30,.78));
+  border-bottom:1px solid var(--line)}
+.htop{display:flex;align-items:center;gap:18px;padding:10px 18px;flex-wrap:wrap}
+.logo{font-size:20px;font-weight:800;letter-spacing:.5px;display:flex;align-items:center;gap:8px;
+  background:linear-gradient(90deg,var(--accent),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+.stats{display:flex;gap:14px;flex-wrap:wrap;margin-left:auto}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 12px;min-width:96px}
+.stat .k{font-size:11px;color:var(--dim);display:flex;align-items:center;gap:4px}
+.stat .v{font-size:16px;font-weight:800;margin-top:2px}
+.stat .v.good{color:var(--good)} .stat .v.bad{color:var(--bad)}
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.speedbtns{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px}
+.speedbtns button{background:transparent;color:var(--dim);padding:5px 9px;border-radius:7px;font-size:13px;font-weight:700}
+.speedbtns button.on{background:var(--accent);color:#04122a}
+/* Nav */
+nav{display:flex;gap:4px;padding:0 14px 8px;overflow-x:auto}
+nav button{background:transparent;color:var(--dim);padding:8px 14px;border-radius:10px 10px 0 0;font-size:14px;font-weight:600;white-space:nowrap;border-bottom:2px solid transparent}
+nav button.on{color:var(--txt);border-bottom-color:var(--accent);background:rgba(54,209,220,.06)}
+main{padding:18px;max-width:1180px;margin:0 auto}
+.panel{display:none;animation:fade .25s ease}
+.panel.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.grid{display:grid;gap:14px}
+.cards{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+.card h3{font-size:14px;color:var(--dim);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.card .big{font-size:26px;font-weight:800}
+.card .sub{font-size:12px;color:var(--dim);margin-top:4px}
+.section-title{font-size:18px;font-weight:800;margin:6px 0 12px;display:flex;align-items:center;gap:8px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line)}
+th{color:var(--dim);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+tr:hover td{background:rgba(54,209,220,.04)}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.tag.g{background:rgba(61,220,132,.15);color:var(--good)}
+.tag.b{background:rgba(255,107,107,.15);color:var(--bad)}
+.tag.w{background:rgba(255,209,102,.15);color:var(--warn)}
+.tag.n{background:rgba(141,162,200,.15);color:var(--dim)}
+input,select{background:var(--bg2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:7px 9px;font-size:13px;width:100%}
+input:focus,select:focus{border-color:var(--accent)}
+label{font-size:12px;color:var(--dim);display:block;margin-bottom:4px}
+.modal-bg{position:fixed;inset:0;background:rgba(3,7,18,.72);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:18px}
+.modal-bg.on{display:flex}
+.modal{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:16px;padding:22px;width:min(560px,96vw);max-height:90vh;overflow:auto;box-shadow:var(--shadow)}
+.modal h2{font-size:18px;margin-bottom:14px}
+.modal .row{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.modal .row>div{flex:1;min-width:140px}
+.modal .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel);border:1px solid var(--accent);
+  color:var(--txt);padding:12px 18px;border-radius:12px;z-index:200;opacity:0;transition:.3s;box-shadow:var(--shadow);max-width:90vw}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.empty{text-align:center;color:var(--dim);padding:40px 10px;font-size:14px}
+.bar{height:8px;border-radius:6px;background:var(--bg2);overflow:hidden;margin-top:6px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.logitem{padding:9px 12px;border-left:3px solid var(--line);background:var(--panel);border-radius:0 10px 10px 0;margin-bottom:8px;font-size:13px}
+.logitem.good{border-color:var(--good)} .logitem.bad{border-color:var(--bad)} .logitem.warn{border-color:var(--warn)}
+.logitem .t{color:var(--dim);font-size:11px;margin-right:8px}
+.kpi{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.kpi .card{flex:1;min-width:150px}
+canvas{max-width:100%}
+.muted{color:var(--dim);font-size:12px}
+.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spacer{flex:1}
+.pill{font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(91,134,229,.15);color:#a9c2ff;font-weight:700}
+.help{background:rgba(91,134,229,.08);border:1px solid var(--line);border-radius:12px;padding:14px;font-size:13px;color:var(--dim);line-height:1.7}
+.help b{color:var(--txt)}
+footer{text-align:center;color:var(--dim);font-size:12px;padding:20px}
+a.link{color:var(--accent);text-decoration:none}
+a.link:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="htop">
+    <div class="logo">✈ 天空帝国 <span style="font-size:12px;color:var(--dim);-webkit-text-fill-color:var(--dim)">Sky Empire</span></div>
+    <div class="stats">
+      <div class="stat"><div class="k">💰 现金</div><div class="v" id="sCash">—</div></div>
+      <div class="stat"><div class="k">📈 净资产</div><div class="v" id="sNet">—</div></div>
+      <div class="stat"><div class="k">⭐ 声誉</div><div class="v" id="sRep">—</div></div>
+      <div class="stat"><div class="k">📅 天数</div><div class="v" id="sDay">—</div></div>
+      <div class="stat"><div class="k">📊 今日盈亏</div><div class="v" id="sProfit">—</div></div>
+    </div>
+    <div class="controls">
+      <div class="speedbtns">
+        <button data-sp="0" id="sp0">⏸</button>
+        <button data-sp="1" id="sp1">▶</button>
+        <button data-sp="2" id="sp2">2×</button>
+        <button data-sp="4" id="sp4">4×</button>
+      </div>
+      <button class="btn ghost sm" id="btnSave">💾 保存</button>
+      <button class="btn ghost sm" id="btnShare">🔗 分享</button>
+      <button class="btn ghost sm" id="btnReset">🔄 重置</button>
+    </div>
+  </div>
+  <nav id="nav">
+    <button data-tab="dash" class="on">📊 概览</button>
+    <button data-tab="fleet">🛩 机队</button>
+    <button data-tab="routes">🗺 航线</button>
+    <button data-tab="market">🏙 市场</button>
+    <button data-tab="staff">👥 员工</button>
+    <button data-tab="research">🔬 研发</button>
+    <button data-tab="finance">💳 财务</button>
+    <button data-tab="log">📜 日志</button>
+  </nav>
+</header>
+
+<main>
+  <!-- DASHBOARD -->
+  <section class="panel on" id="tab-dash">
+    <div class="kpi">
+      <div class="card"><h3>💰 现金</h3><div class="big" id="dCash">—</div><div class="sub" id="dCashSub"></div></div>
+      <div class="card"><h3>📈 净资产</h3><div class="big" id="dNet">—</div><div class="sub" id="dNetSub"></div></div>
+      <div class="card"><h3>⭐ 声誉</h3><div class="big" id="dRep">—</div><div class="bar"><i id="dRepBar"></i></div></div>
+      <div class="card"><h3>🛩 机队 / 航线</h3><div class="big" id="dFleet">—</div><div class="sub" id="dRoutes"></div></div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <h3>📉 资产走势（近 60 天）</h3>
+      <canvas id="chart" height="180"></canvas>
+    </div>
+    <div class="grid cards">
+      <div class="card"><h3>📊 今日营收</h3><div class="big" id="dRev">—</div><div class="sub">客票收入</div></div>
+      <div class="card"><h3>🛢 今日成本</h3><div class="big" id="dCost">—</div><div class="sub">燃油+起降+维护+薪资</div></div>
+      <div class="card"><h3>🧑‍✈️ 在飞旅客</h3><div class="big" id="dPax">—</div><div class="sub">今日承运人次</div></div>
+      <div class="card"><h3>🎯 通关目标</h3><div class="big" id="dGoal">—</div><div class="sub">净资产达到目标即胜利</div></div>
+    </div>
+    <div class="help" style="margin-top:14px">
+      <b>玩法提示：</b>用启动资金购买飞机 → 在「市场」购买机场起降权 → 在「航线」开设往返航线并指派飞机、设定票价与班次 → 让模拟运行赚钱。
+      票价越接近「公道价」上座率越高；声誉高则需求更大。注意燃油、维护与员工工资是每日固定开销，资金为负会破产。
+      点击右上角 <b>🔗 分享</b> 可复制一条包含全部进度的链接（无需分享码），发给朋友即可让对方接着玩。
+    </div>
+  </section>
+
+  <!-- FLEET -->
+  <section class="panel" id="tab-fleet">
+    <div class="flex" style="margin-bottom:12px">
+      <div class="section-title" style="margin:0">🛩 我的机队</div>
+      <div class="spacer"></div>
+      <button class="btn" id="btnBuyAircraft">＋ 购买飞机</button>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <table>
+        <thead><tr><th>机型</th><th>状态</th><th>运力/班</th><th>航程</th><th>日维护</th><th>指派航线</th><th>操作</th></tr></thead>
+        <tbody id="fleetBody"></tbody>
+      </table>
+      <div class="empty" id="fleetEmpty" style="display:none">还没有飞机，点击「购买飞机」开始组建机队。</div>
+    </div>
+    <div class="section-title">📦 可购机型</div>
+    <div class="grid cards" id="acTypes"></div>
+  </section>
+
+  <!-- ROUTES -->
+  <section class="panel" id="tab-routes">
+    <div class="flex" style="margin-bottom:12px">
+      <div class="section-title" style="margin:0">🗺 航线网络</div>
+      <div class="spacer"></div>
+      <button class="btn" id="btnNewRoute">＋ 开设航线</button>
+    </div>
+    <div class="card">
+      <table>
+        <thead><tr><th>航线</th><th>机型</th><th>班次/日</th><th>票价</th><th>公道价</th><th>上座率</th><th>日利润</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody id="routeBody"></tbody>
+      </table>
+      <div class="empty" id="routeEmpty" style="display:none">还没有航线。先在「市场」买好两端机场的起降权，再来这里开设航线。</div>
+    </div>
+  </section>
+
+  <!-- MARKET -->
+  <section class="panel" id="tab-market">
+    <div class="section-title">🏙 机场市场（购买起降权后才能在两端开设航线）</div>
+    <div class="card">
+      <table>
+        <thead><tr><th>代码</th><th>城市</th><th>区域</th><th>市场需求</th><th>起降权费用</th><th>已拥有</th><th>操作</th></tr></thead>
+        <tbody id="marketBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- STAFF -->
+  <section class="panel" id="tab-staff">
+    <div class="section-title">👥 员工管理</div>
+    <div class="grid cards">
+      <div class="card">
+        <h3>🧑‍✈️ 飞行员</h3>
+        <div class="big" id="stPilot">0</div>
+        <div class="sub">每架在飞飞机需 <span id="stNeed">0</span> 名机长 · 日薪 ¥2,500/人</div>
+        <div class="bar"><i id="stPilotBar"></i></div>
+        <div class="flex" style="margin-top:10px">
+          <button class="btn sm" id="hirePilot">雇 1 人</button>
+          <button class="btn ghost sm" id="firePilot">辞 1 人</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>🔧 机务工程师</h3>
+        <div class="big" id="stMech">0</div>
+        <div class="sub">提升可靠性、降低故障停飞 · 日薪 ¥2,000/人</div>
+        <div class="bar"><i id="stMechBar"></i></div>
+        <div class="flex" style="margin-top:10px">
+          <button class="btn sm" id="hireMech">雇 1 人</button>
+          <button class="btn ghost sm" id="fireMech">辞 1 人</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📣 市场专员</h3>
+        <div class="big" id="stMkt">0</div>
+        <div class="sub">每人 +4% 航线需求 · 日薪 ¥1,800/人</div>
+        <div class="bar"><i id="stMktBar"></i></div>
+        <div class="flex" style="margin-top:10px">
+          <button class="btn sm" id="hireMkt">雇 1 人</button>
+          <button class="btn ghost sm" id="fireMkt">辞 1 人</button>
+        </div>
+      </div>
+    </div>
+    <div class="help" style="margin-top:14px">提示：飞行员数量需 ≥ 所有在飞飞机的机组需求总和，否则部分运力受限。机务越多，机械故障导致停飞的概率越低。</div>
+  </section>
+
+  <!-- RESEARCH -->
+  <section class="panel" id="tab-research">
+    <div class="section-title">🔬 研发中心</div>
+    <div class="muted" style="margin-bottom:12px">投入资金解锁永久增益，提升效率与竞争力。</div>
+    <div class="grid cards" id="researchBody"></div>
+  </section>
+
+  <!-- FINANCE -->
+  <section class="panel" id="tab-finance">
+    <div class="section-title">💳 财务中心</div>
+    <div class="grid cards" style="margin-bottom:14px">
+      <div class="card"><h3>🏦 银行贷款</h3><div class="big" id="finLoan">—</div><div class="sub" id="finLoanSub"></div>
+        <div class="flex" style="margin-top:10px"><button class="btn sm" id="btnLoan">借 ¥1000万</button><button class="btn ghost sm" id="btnRepay">还 ¥1000万</button></div>
+      </div>
+      <div class="card"><h3>📒 累计净利润</h3><div class="big" id="finTotal">—</div><div class="sub">自开局以来</div></div>
+      <div class="card"><h3>📅 日均利润</h3><div class="big" id="finAvg">—</div><div class="sub" id="finAvgSub"></div></div>
+    </div>
+    <div class="card">
+      <h3>📜 收支明细（近 30 天）</h3>
+      <table><thead><tr><th>天数</th><th>营收</th><th>成本</th><th>净盈亏</th></tr></thead><tbody id="ledgerBody"></tbody></table>
+    </div>
+  </section>
+
+  <!-- LOG -->
+  <section class="panel" id="tab-log">
+    <div class="section-title">📜 事件日志</div>
+    <div id="logBody"></div>
+  </section>
+</main>
+
+<footer>天空帝国 · 虚拟航空大亨 — 纯前端单文件游戏 · 进度可本地保存，亦可一键生成分享链接</footer>
+
+<!-- Modals -->
+<div class="modal-bg" id="buyAircraftModal">
+  <div class="modal">
+    <h2>🛩 购买飞机</h2>
+    <div id="buyAircraftList"></div>
+    <div class="actions"><button class="btn ghost" onclick="closeModal('buyAircraftModal')">关闭</button></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="routeModal">
+  <div class="modal">
+    <h2>🗺 开设新航线</h2>
+    <div class="row">
+      <div><label>出发机场</label><select id="rFrom"></select></div>
+      <div><label>到达机场</label><select id="rTo"></select></div>
+    </div>
+    <div class="row">
+      <div><label>指派飞机</label><select id="rAc"></select></div>
+      <div><label>班次 / 日（往返）</label><input id="rFreq" type="number" min="1" max="12" value="2"></div>
+    </div>
+    <div class="row">
+      <div><label>票价（¥/人）</label><input id="rPrice" type="number" min="50" step="10" value="800"></div>
+      <div><label>建议公道价</label><div class="sub" id="rFair" style="padding-top:8px">—</div></div>
+    </div>
+    <div class="muted" id="rHint" style="margin-bottom:10px"></div>
+    <div class="actions">
+      <button class="btn ghost" onclick="closeModal('routeModal')">取消</button>
+      <button class="btn" id="rCreate">创建航线</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="priceModal">
+  <div class="modal">
+    <h2>✈ 调整航线</h2>
+    <div class="row">
+      <div><label>班次 / 日</label><input id="pFreq" type="number" min="1" max="12" value="2"></div>
+      <div><label>票价（¥/人）</label><input id="pPrice" type="number" min="50" step="10" value="800"></div>
+    </div>
+    <div class="muted" id="pHint"></div>
+    <div class="actions">
+      <button class="btn ghost" onclick="closeModal('priceModal')">取消</button>
+      <button class="btn" id="pSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="shareModal">
+  <div class="modal">
+    <h2>🔗 分享游戏进度</h2>
+    <p class="muted" style="margin-bottom:12px">下方链接已包含你当前的全部游戏进度，无需分享码。把它发给朋友，对方打开即可接手你的航空公司继续经营。</p>
+    <input id="shareUrl" readonly style="font-size:12px">
+    <div class="actions">
+      <button class="btn ghost" id="shareExport">导出存档</button>
+      <button class="btn ghost" id="shareImport">导入存档</button>
+      <button class="btn ghost" id="shareCopy">复制链接</button>
+      <button class="btn" onclick="closeModal('shareModal')">完成</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ 数据 ============ */
+const AIRPORTS = [
+  {code:"PEK",city:"北京",region:"华北",demand:2600,slot:3200,lat:39.9,lng:116.4},
+  {code:"SHA",city:"上海",region:"华东",demand:2800,slot:3400,lat:31.2,lng:121.8},
+  {code:"CAN",city:"广州",region:"华南",demand:2300,slot:2800,lat:23.1,lng:113.3},
+  {code:"SZX",city:"深圳",region:"华南",demand:2200,slot:2700,lat:22.5,lng:114.1},
+  {code:"CTU",city:"成都",region:"西南",demand:1900,slot:2100,lat:30.6,lng:104.0},
+  {code:"CKG",city:"重庆",region:"西南",demand:1800,slot:2000,lat:29.6,lng:106.5},
+  {code:"HGH",city:"杭州",region:"华东",demand:1700,slot:1900,lat:30.3,lng:120.2},
+  {code:"XIY",city:"西安",region:"西北",demand:1500,slot:1600,lat:34.3,lng:108.9},
+  {code:"KMG",city:"昆明",region:"西南",demand:1400,slot:1500,lat:25.0,lng:102.7},
+  {code:"WUH",city:"武汉",region:"华中",demand:1500,slot:1600,lat:30.6,lng:114.3},
+  {code:"CSX",city:"长沙",region:"华中",demand:1400,slot:1500,lat:28.2,lng:113.0},
+  {code:"HKG",city:"香港",region:"中国香港",demand:2000,slot:3600,lat:22.3,lng:114.2},
+  {code:"TPE",city:"台北",region:"中国台湾",demand:1600,slot:2200,lat:25.1,lng:121.5},
+  {code:"NRT",city:"东京",region:"东亚",demand:1700,slot:4000,lat:35.8,lng:140.4},
+  {code:"ICN",city:"首尔",region:"东亚",demand:1500,slot:3300,lat:37.6,lng:126.9},
+  {code:"SIN",city:"新加坡",region:"东南亚",demand:1600,slot:3500,lat:1.4,lng:103.9},
+  {code:"BKK",city:"曼谷",region:"东南亚",demand:1400,slot:3000,lat:13.7,lng:100.5},
+  {code:"DXB",city:"迪拜",region:"中东",demand:1300,slot:4200,lat:25.3,lng:55.4},
+  {code:"LHR",city:"伦敦",region:"欧洲",demand:1500,slot:4800,lat:51.5,lng:-0.5},
+  {code:"LAX",city:"洛杉矶",region:"北美",demand:1400,slot:5200,lat:33.9,lng:-118.4},
+  {code:"SYD",city:"悉尼",region:"大洋洲",demand:1200,slot:4600,lat:-33.9,lng:151.2},
+  {code:"FRA",city:"法兰克福",region:"欧洲",demand:1300,slot:4400,lat:50.0,lng:8.6}
+];
+const AC_TYPES = [
+  {id:"crj", name:"庞巴迪 CRJ900", cls:"支线", range:2500, cap:90, speed:850, fuel:8, maint:3000, crew:2, price:25},
+  {id:"a320", name:"空客 A320", cls:"窄体", range:6100, cap:180, speed:840, fuel:14, maint:6000, crew:2, price:50},
+  {id:"b738", name:"波音 737-800", cls:"窄体", range:5400, cap:189, speed:840, fuel:15, maint:6200, crew:2, price:55},
+  {id:"a321", name:"空客 A321neo", cls:"窄体高效", range:7400, cap:220, speed:830, fuel:12, maint:6500, crew:2, price:65},
+  {id:"a330", name:"空客 A330", cls:"宽体", range:11750, cap:300, speed:870, fuel:28, maint:11000, crew:3, price:120},
+  {id:"b789", name:"波音 787-9", cls:"宽体远程", range:14140, cap:290, speed:900, fuel:26, maint:13000, crew:3, price:180},
+  {id:"a359", name:"空客 A350-900", cls:"超远程", range:15000, cap:325, speed:905, fuel:25, maint:14000, crew:3, price:220},
+  {id:"b748", name:"波音 747-8", cls:"巨型", range:14815, cap:410, speed:920, fuel:40, maint:18000, crew:4, price:260}
+];
+const RESEARCH = [
+  {id:"fuel1", name:"燃油效率 I", desc:"全部飞机燃油成本 -10%", cost:8, effect:{fuel:0.9}},
+  {id:"fuel2", name:"燃油效率 II", desc:"在 I 基础上再 -10% 燃油", cost:20, req:"fuel1", effect:{fuel:0.9}},
+  {id:"maint1", name:"精益维护", desc:"飞机日维护成本 -15%", cost:15, effect:{maint:0.85}},
+  {id:"comfort", name:"客舱舒适度", desc:"声誉提升速度 +50%，上座率 +3%", cost:12, effect:{comfort:1}},
+  {id:"dynamic", name:"智能定价 AI", desc:"自动微调票价至最优区间", cost:25, effect:{dynamic:1}},
+  {id:"brand", name:"品牌营销", desc:"全航线需求 +8%", cost:18, effect:{brand:1}},
+  {id:"hub", name:"枢纽运营", desc:"起降/停靠费 -20%", cost:22, effect:{hubfee:0.8}}
+];
+const GOAL_NETWORTH = 2000000000; // 20亿
+const START_MONEY = 150000000;     // 1.5亿
+
+/* ============ 状态 ============ */
+let S, timer=null, speed=0, uid=1;
+
+function freshState(){
+  return {
+    day:1, money:START_MONEY, reputation:50,
+    ownedHubs:[], // airport codes
+    fleet:[],     // {uid,type,routeId|null}
+    routes:[],    // {id,from,to,ac,price,freq,status,lastPax,lastSeats,lastProfit}
+    staff:{pilot:2, mech:1, mkt:1},
+    loans:0,
+    research:{},  // id->true
+    history:[],   // {day,cash,net}
+    ledger:[],    // {day,rev,cost,profit}
+    log:[],       // {day,msg,type}
+    totalProfit:0,
+    fuelMult:1, fuelMultDays:0,
+    over:false, won:false,
+    paused_for_over:false
+  };
+}
+
+/* ============ 工具 ============ */
+function ap(code){return AIRPORTS.find(a=>a.code===code);}
+function actype(id){return AC_TYPES.find(t=>t.id===id);}
+function dist(a,b){
+  const R=6371,toR=x=>x*Math.PI/180;
+  const dLat=toR(b.lat-a.lat),dLng=toR(b.lng-a.lng);
+  const s=Math.sin(dLat/2)**2+Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLng/2)**2;
+  return Math.round(2*R*Math.asin(Math.sqrt(s)));
+}
+function fmt(n){
+  const a=Math.abs(n);
+  if(a>=1e8) return (n<0?"-":"")+"¥"+(Math.abs(n)/1e8).toFixed(2)+"亿";
+  if(a>=1e4) return (n<0?"-":"")+"¥"+(Math.abs(n)/1e4).toFixed(1)+"万";
+  return (n<0?"-":"")+"¥"+Math.round(Math.abs(n)).toLocaleString();
+}
+function fairPrice(d){return Math.max(200, Math.round(d*0.085+120));}
+function signed(n){return (n>=0?"+":"")+fmt(n);}
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2600);
+}
+function closeModal(id){document.getElementById(id).classList.remove('on');}
+
+/* 研究增益 */
+function getMult(k){
+  let m=1;
+  for(const r of RESEARCH){ if(S.research[r.id] && r.effect[k]) m*=r.effect[k]; }
+  return m;
+}
+function fleetValue(){ return S.fleet.reduce((s,f)=>s+actype(f.type).price*1e6*0.8,0); }
+function netWorth(){ return S.money + fleetValue() - S.loans; }
+function dailySalaries(){ return S.staff.pilot*2500 + S.staff.mech*2000 + S.staff.mkt*1800; }
+function crewNeed(){ return S.fleet.filter(f=>f.routeId).reduce((s,f)=>s+actype(f.type).crew,0); }
+
+/* ============ 模拟 ============ */
+function advanceDay(){
+  if(S.over) return;
+  let rev=0, cost=0, paxTotal=0;
+  // 燃油倍数倒计时
+  if(S.fuelMultDays>0){ S.fuelMultDays--; if(S.fuelMultDays===0) S.fuelMult=1; }
+
+  const crewAvail = S.staff.pilot;
+  const crewReq = crewNeed();
+  const crewFactor = crewAvail>=crewReq ? 1 : Math.max(0.4, crewAvail/crewReq); // 飞行员不足则运力打折
+  // 机务可靠性
+  const mechRatio = S.staff.mech/Math.max(1, S.fleet.length);
+  const breakChance = Math.max(0.01, 0.18 - mechRatio*0.5); // 每架在飞飞机当日故障概率
+
+  const fuelM = getMult('fuel'), maintM = getMult('maint'), hubM=getMult('hubfee');
+  const brandM = getMult('brand'); // 需求
+  const comfortM = getMult('comfort');
+  const dynamic = getMult('dynamic');
+
+  const repFactor = 0.6 + S.reputation/100; // 0.6~1.6
+
+  for(const r of S.routes){
+    if(r.status!=='active'){ r.lastPax=0;r.lastSeats=0;r.lastProfit=0; continue; }
+    const f = S.fleet.find(x=>x.uid===r.ac);
+    if(!f){ r.lastPax=0;r.lastSeats=0;r.lastProfit=0; continue; }
+    const at=actype(f.type);
+    const A=ap(r.from),B=ap(r.to);
+    const d=dist(A,B);
+    if(d>at.range){ // 超出航程无法执飞
+      r.lastPax=0;r.lastSeats=0;r.lastProfit=0;
+      if(!r._rangeWarned){ pushLog("航线 "+r.from+"-"+r.to+" 超出 "+at.name+" 航程，已停飞。","bad"); r._rangeWarned=true; }
+      continue;
+    }
+    r._rangeWarned=false;
+    // 班次受飞行员影响
+    const effFreq = Math.max(1, Math.round(r.freq*crewFactor));
+    const seats = at.cap * effFreq;
+    // 需求
+    const base = (A.demand+B.demand)/2 * (1 - Math.min(0.4, d/30000)) ;
+    const fair = fairPrice(d);
+    let ratio = r.price/fair;
+    let priceFactor = ratio<=1 ? (1+(1-ratio)*0.25) : Math.pow(1/ratio,1.4);
+    priceFactor = Math.max(0.12, Math.min(1.3, priceFactor));
+    let demand = base * priceFactor * repFactor * (1+S.staff.mkt*0.04) * brandM * (1+(comfortM>1?0.03:0));
+    // 故障
+    let breakdown=0;
+    if(Math.random()<breakChance){ breakdown=0.5; }
+    const availSeats = Math.round(seats*(1-breakdown));
+    const pax = Math.min(availSeats, Math.round(demand));
+    // 收入
+    const rRev = pax * r.price;
+    // 成本
+    const rFuel = d*2 * at.fuel*fuelM * effFreq;
+    const rLanding = 1800 * effFreq * 2 * hubM;
+    const rMaint = at.maint*maintM; // 在飞日维护
+    const rCost = rFuel + rLanding + rMaint;
+    const profit = rRev - rCost;
+    r.lastPax=pax; r.lastSeats=seats; r.lastProfit=profit;
+    rev+=rRev; cost+=rCost; paxTotal+=pax;
+
+    // 声誉微调
+    let drep=0;
+    if(pax/seats>0.85 && ratio<=1.3) drep+=0.12;      // 服务好且价格合理
+    if(ratio>1.6) drep-=0.1;                           // 定价过高
+    if(demand>availSeats*1.05) drep-=0.08;             // 运力不足，旅客买不到票
+    S.reputation=Math.max(0,Math.min(100,S.reputation+drep*(comfortM>1?1.5:1)));
+  }
+
+  // 闲置飞机维护
+  const idle = S.fleet.filter(f=>!f.routeId);
+  const idleMaint = idle.reduce((s,f)=>s+actype(f.type).maint*maintM,0);
+  cost += idleMaint;
+
+  // 员工工资
+  const sal = dailySalaries();
+  cost += sal;
+
+  // 贷款利息（年化6%）
+  const interest = S.loans*0.06/365;
+  cost += interest;
+
+  const profit = rev - cost;
+  S.money += profit;
+  S.totalProfit += profit;
+  S.day++;
+  S.history.push({day:S.day, cash:S.money, net:netWorth()});
+  if(S.history.length>120) S.history.shift();
+  S.ledger.push({day:S.day, rev, cost, profit});
+  if(S.ledger.length>30) S.ledger.shift();
+
+  // 随机事件
+  maybeEvent();
+
+  // 胜负判定
+  if(netWorth()>=GOAL_NETWORTH && !S.won){ S.won=true; S.over=true; pushLog("🎉 恭喜！净资产突破 20 亿，你成为了航空大亨！","good"); }
+  if(S.money < -2000000 && !S.over){ S.over=true; pushLog("💥 资金严重透支，公司破产，游戏结束。","bad"); }
+
+  renderAll();
+  if(S.over){ stopTimer(); openOverModal(); }
+}
+
+function maybeEvent(){
+  if(Math.random()>0.16) return;
+  const evs=[
+    ()=>{ S.fuelMult=1.5; S.fuelMultDays=7+Math.floor(Math.random()*6); pushLog("⛽ 国际油价飙升！未来 "+S.fuelMultDays+" 天燃油成本 ×1.5。","warn"); },
+    ()=>{ const g=Math.floor(800+Math.random()*1500); S.money+=g; pushLog("🏛 获得地方政府航线补贴 "+fmt(g)+"。","good"); },
+    ()=>{ S.reputation=Math.min(100,S.reputation+3); pushLog("⭐ 旅客满意度提升，声誉 +3。","good"); },
+    ()=>{ S.reputation=Math.max(0,S.reputation-4); pushLog("😞 竞争对手降价促销，声誉 -4。","bad"); },
+    ()=>{ const p=Math.floor(50+Math.random()*100); S.reputation=Math.max(0,S.reputation-p*0.1); pushLog("🌪 恶劣天气导致大面积延误，声誉下滑。","warn"); },
+    ()=>{ const fee=Math.floor(300+Math.random()*700); S.money-=fee; pushLog("🛠 突发飞机检修支出 "+fmt(fee)+"。","warn"); }
+  ];
+  evs[Math.floor(Math.random()*evs.length)]();
+}
+
+function pushLog(msg,type){ S.log.unshift({day:S.day,msg,type:type||""}); if(S.log.length>200) S.log.pop(); }
+
+/* ============ 渲染 ============ */
+function renderAll(){
+  // header
+  document.getElementById('sCash').textContent=fmt(S.money);
+  document.getElementById('sCash').className='v '+(S.money<0?'bad':'good');
+  document.getElementById('sNet').textContent=fmt(netWorth());
+  document.getElementById('sRep').textContent=Math.round(S.reputation);
+  document.getElementById('sDay').textContent="第"+S.day+"天";
+  const todayProfit = S.ledger.length?S.ledger[S.ledger.length-1].profit:0;
+  const sp=document.getElementById('sProfit'); sp.textContent=signed(todayProfit); sp.className='v '+(todayProfit>=0?'good':'bad');
+  renderDash(); renderFleet(); renderRoutes(); renderMarket(); renderStaff(); renderResearch(); renderFinance(); renderLog();
+  drawChart();
+}
+
+function renderDash(){
+  document.getElementById('dCash').textContent=fmt(S.money);
+  document.getElementById('dCashSub').textContent=(S.money<0?"⚠ 资金为负":"运转正常");
+  document.getElementById('dCashSub').style.color=S.money<0?'var(--bad)':'var(--dim)';
+  document.getElementById('dNet').textContent=fmt(netWorth());
+  const pct = netWorth()/GOAL_NETWORTH*100;
+  document.getElementById('dNetSub').textContent="目标进度 "+pct.toFixed(1)+"%";
+  document.getElementById('dRep').textContent=Math.round(S.reputation)+" / 100";
+  document.getElementById('dRepBar').style.width=S.reputation+"%";
+  const active=S.routes.filter(r=>r.status==='active').length;
+  document.getElementById('dFleet').textContent=S.fleet.length+" 架";
+  document.getElementById('dRoutes').textContent=active+" 条在飞";
+  const last=S.ledger[S.ledger.length-1];
+  document.getElementById('dRev').textContent=last?fmt(last.rev):"¥0";
+  document.getElementById('dCost').textContent=last?fmt(last.cost):"¥0";
+  document.getElementById('dPax').textContent=S.routes.reduce((s,r)=>s+(r.lastPax||0),0).toLocaleString();
+  document.getElementById('dGoal').textContent=fmt(GOAL_NETWORTH);
+}
+
+function renderFleet(){
+  const tb=document.getElementById('fleetBody'); tb.innerHTML='';
+  document.getElementById('fleetEmpty').style.display=S.fleet.length?'none':'block';
+  for(const f of S.fleet){
+    const t=actype(f.type);
+    const r=S.routes.find(x=>x.id===f.routeId);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><b>${t.name}</b><div class="muted">${t.cls}</div></td>
+      <td>${f.routeId?'<span class="tag g">执飞中</span>':'<span class="tag n">待命</span>'}</td>
+      <td>${t.cap} 人</td><td>${t.range.toLocaleString()} km</td>
+      <td>${fmt(t.maint)}</td>
+      <td>${r?r.from+"-"+r.to:"—"}</td>
+      <td><button class="btn ghost sm" onclick="sellAircraft(${f.uid})">出售</button></td>`;
+    tb.appendChild(tr);
+  }
+  // 可购机型
+  const box=document.getElementById('acTypes'); box.innerHTML='';
+  for(const t of AC_TYPES){
+    const div=document.createElement('div'); div.className='card';
+    div.innerHTML=`<h3>${t.name}</h3>
+      <div class="big">${fmt(t.price*1e6)}</div>
+      <div class="sub">${t.cls} · 运力 ${t.cap} 人 · 航程 ${t.range.toLocaleString()}km</div>
+      <div class="sub" style="margin-top:6px">速度 ${t.speed}km/h · 燃油 ${t.fuel}$/km · 机组 ${t.crew} 人</div>
+      <button class="btn sm" style="margin-top:10px;width:100%" ${S.money<t.price*1e6?'disabled':''} onclick="buyAircraft('${t.id}')">购买</button>`;
+    box.appendChild(div);
+  }
+}
+
+function renderRoutes(){
+  const tb=document.getElementById('routeBody'); tb.innerHTML='';
+  document.getElementById('routeEmpty').style.display=S.routes.length?'none':'block';
+  for(const r of S.routes){
+    const f=S.fleet.find(x=>x.uid===r.ac); const t=f?actype(f.type):null;
+    const A=ap(r.from),B=ap(r.to); const d=dist(A,B);
+    const fair=fairPrice(d);
+    const occ=r.lastSeats?Math.round(r.lastPax/r.lastSeats*100):0;
+    const st = r.status==='active'?'<span class="tag g">在飞</span>':'<span class="tag w">暂停</span>';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><b>${r.from}→${r.to}</b></td>
+      <td>${t?t.name.split(' ')[0]:"—"}</td>
+      <td>${r.freq}</td>
+      <td>${fmt(r.price)}</td>
+      <td class="muted">${fmt(fair)}</td>
+      <td>${occ}%</td>
+      <td class="${(r.lastProfit||0)>=0?'':''}" style="color:${(r.lastProfit||0)>=0?'var(--good)':'var(--bad)'}">${(r.lastProfit||0)?signed(r.lastProfit):"—"}</td>
+      <td>${st}</td>
+      <td>
+        <button class="btn ghost sm" onclick="openPrice('${r.id}')">调整</button>
+        <button class="btn ghost sm" onclick="toggleRoute('${r.id}')">${r.status==='active'?'暂停':'恢复'}</button>
+        <button class="btn danger sm" onclick="delRoute('${r.id}')">删除</button>
+      </td>`;
+    tb.appendChild(tr);
+  }
+}
+
+function renderMarket(){
+  const tb=document.getElementById('marketBody'); tb.innerHTML='';
+  for(const a of AIRPORTS){
+    const owned=S.ownedHubs.includes(a.code);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><b>${a.code}</b></td><td>${a.city}</td><td>${a.region}</td>
+      <td>${a.demand.toLocaleString()}</td><td>${fmt(a.slot*1e4)}</td>
+      <td>${owned?'<span class="tag g">已拥有</span>':'<span class="tag n">未购买</span>'}</td>
+      <td>${owned?'<span class="muted">—</span>':`<button class="btn sm" ${S.money<a.slot*1e4?'disabled':''} onclick="buyHub('${a.code}')">购买</button>`}</td>`;
+    tb.appendChild(tr);
+  }
+}
+
+function renderStaff(){
+  document.getElementById('stPilot').textContent=S.staff.pilot;
+  document.getElementById('stMech').textContent=S.staff.mech;
+  document.getElementById('stMkt').textContent=S.staff.mkt;
+  const need=crewNeed();
+  document.getElementById('stNeed').textContent=need;
+  document.getElementById('stPilotBar').style.width=Math.min(100,need/Math.max(1,S.staff.pilot)*100)+"%";
+  document.getElementById('stMechBar').style.width=Math.min(100,S.staff.mech/Math.max(1,S.fleet.length)*100)+"%";
+  document.getElementById('stMktBar').style.width=Math.min(100,S.staff.mkt*10)+"%";
+}
+
+function renderResearch(){
+  const box=document.getElementById('researchBody'); box.innerHTML='';
+  for(const r of RESEARCH){
+    const done=S.research[r.id]; const locked=r.req && !S.research[r.req];
+    const div=document.createElement('div'); div.className='card';
+    div.innerHTML=`<h3>${r.name}</h3>
+      <div class="sub">${r.desc}</div>
+      <div style="margin-top:10px">${done?'<span class="tag g">已解锁</span>':locked?'<span class="tag n">需先解锁前置</span>':`<button class="btn sm" ${S.money<r.cost*1e6?'disabled':''} onclick="buyResearch('${r.id}')">解锁 ${fmt(r.cost*1e6)}</button>`}</div>`;
+    box.appendChild(div);
+  }
+}
+
+function renderFinance(){
+  document.getElementById('finLoan').textContent=fmt(S.loans);
+  document.getElementById('finLoanSub').textContent="年化 6% · 日息 "+fmt(S.loans*0.06/365);
+  document.getElementById('finTotal').textContent=signed(S.totalProfit);
+  document.getElementById('finTotal').style.color=S.totalProfit>=0?'var(--good)':'var(--bad)';
+  const avg=S.day>1?S.totalProfit/S.day:0;
+  document.getElementById('finAvg').textContent=signed(avg);
+  document.getElementById('finAvg').style.color=avg>=0?'var(--good)':'var(--bad)';
+  document.getElementById('finAvgSub').textContent="经营 "+S.day+" 天";
+  const tb=document.getElementById('ledgerBody'); tb.innerHTML='';
+  const rows=[...S.ledger].reverse();
+  for(const l of rows){
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>第${l.day}天</td><td>${fmt(l.rev)}</td><td>${fmt(l.cost)}</td>
+      <td style="color:${l.profit>=0?'var(--good)':'var(--bad)'}">${signed(l.profit)}</td>`;
+    tb.appendChild(tr);
+  }
+}
+
+function renderLog(){
+  const box=document.getElementById('logBody'); box.innerHTML='';
+  if(!S.log.length){ box.innerHTML='<div class="empty">暂无事件。</div>'; return; }
+  for(const l of S.log){
+    const d=document.createElement('div');
+    d.className='logitem '+(l.type||'');
+    d.innerHTML=`<span class="t">第${l.day}天</span>${l.msg}`;
+    box.appendChild(d);
+  }
+}
+
+function drawChart(){
+  const c=document.getElementById('chart'); if(!c) return;
+  const ctx=c.getContext('2d');
+  const W=c.width=Math.min(1100, c.parentElement.clientWidth-32);
+  const H=180; c.height=H;
+  ctx.clearRect(0,0,W,H);
+  const data=S.history;
+  if(data.length<2){ ctx.fillStyle='#8da2c8'; ctx.font='13px sans-serif'; ctx.fillText('运行数日后将显示走势图',12,90); return; }
+  const vals=data.map(d=>d.net);
+  const min=Math.min(...vals), max=Math.max(...vals);
+  const range=Math.max(1,max-min);
+  const x=i=>i/(data.length-1)*W;
+  const y=v=>H-10-((v-min)/range)*(H-30);
+  // grid
+  ctx.strokeStyle='rgba(34,51,95,.6)'; ctx.lineWidth=1;
+  for(let g=0;g<=3;g++){ const yy=10+g*(H-30)/3; ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(W,yy);ctx.stroke(); }
+  // line
+  ctx.beginPath();
+  data.forEach((d,i)=>{ const xx=x(i),yy=y(d.net); i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy); });
+  const grad=ctx.createLinearGradient(0,0,W,0); grad.addColorStop(0,'#36d1dc');grad.addColorStop(1,'#5b86e5');
+  ctx.strokeStyle=grad; ctx.lineWidth=2.5; ctx.stroke();
+  // area
+  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();
+  ctx.fillStyle='rgba(54,209,220,.10)';ctx.fill();
+  ctx.fillStyle='#8da2c8';ctx.font='11px sans-serif';
+  ctx.fillText(fmt(max),4,14); ctx.fillText(fmt(min),4,H-2);
+}
+
+/* ============ 操作 ============ */
+function buyAircraft(id){
+  const t=actype(id);
+  if(S.money<t.price*1e6){ toast("现金不足，无法购买"); return; }
+  S.money-=t.price*1e6;
+  S.fleet.push({uid:uid++, type:id, routeId:null});
+  pushLog("购入 "+t.name+"，花费 "+fmt(t.price*1e6)+"。","");
+  toast("已购买 "+t.name);
+  save(); renderAll();
+}
+function sellAircraft(u){
+  const idx=S.fleet.findIndex(f=>f.uid===u);
+  if(idx<0) return;
+  const f=S.fleet[idx];
+  // 若执飞，先暂停相关航线
+  S.routes.forEach(r=>{ if(r.ac===u){ r.ac=null; r.status='paused'; } });
+  const val=Math.round(actype(f.type).price*1e6*0.8);
+  S.money+=val; S.fleet.splice(idx,1);
+  pushLog("出售飞机，回收 "+fmt(val)+"。","");
+  toast("已出售，回收 "+fmt(val));
+  save(); renderAll();
+}
+function buyHub(code){
+  const a=ap(code);
+  if(S.ownedHubs.includes(code)) return;
+  if(S.money<a.slot*1e4){ toast("现金不足"); return; }
+  S.money-=a.slot*1e4; S.ownedHubs.push(code);
+  pushLog("购买 "+a.city+"("+code+") 起降权，花费 "+fmt(a.slot*1e4)+"。","");
+  toast("已开通 "+a.city+" 枢纽");
+  save(); renderAll();
+}
+function buyResearch(id){
+  const r=RESEARCH.find(x=>x.id===id);
+  if(S.research[id]) return;
+  if(r.req && !S.research[r.req]){ toast("需先解锁前置研究"); return; }
+  if(S.money<r.cost*1e6){ toast("现金不足"); return; }
+  S.money-=r.cost*1e6; S.research[id]=true;
+  pushLog("研发完成：「"+r.name+"」。","good");
+  toast("已解锁 "+r.name);
+  save(); renderAll();
+}
+function hire(type){ S.staff[type]++; toast("已雇佣"); save(); renderAll(); }
+function fire(type){ if(S.staff[type]>0){ S.staff[type]--; toast("已辞退"); save(); renderAll(); } }
+
+function takeLoan(){ S.loans+=10000000; S.money+=10000000; pushLog("银行贷款 "+fmt(10000000)+"。",""); save(); renderAll(); }
+function repayLoan(){ const amt=Math.min(10000000,S.loans); if(amt<=0){toast("无贷款");return;} if(S.money<amt){toast("现金不足");return;} S.loans-=amt;S.money-=amt; pushLog("偿还贷款 "+fmt(amt)+"。",""); save(); renderAll(); }
+
+/* 航线弹窗 */
+let routeLastFair=0;
+function openRouteModal(){
+  if(!S.ownedHubs.length){ toast("请先在「市场」购买机场起降权"); return; }
+  if(!S.fleet.length){ toast("请先购买飞机"); return; }
+  const f=document.getElementById('rFrom'), t=document.getElementById('rTo'), a=document.getElementById('rAc');
+  f.innerHTML=S.ownedHubs.map(c=>`<option value="${c}">${ap(c).city}(${c})</option>`).join('');
+  t.innerHTML=S.ownedHubs.map(c=>`<option value="${c}">${ap(c).city}(${c})</option>`).join('');
+  a.innerHTML=S.fleet.map(x=>`<option value="${x.uid}">${actype(x.type).name}</option>`).join('');
+  routeLastFair=0;
+  updateRouteHint();
+  document.getElementById('routeModal').classList.add('on');
+}
+function updateRouteHint(){
+  const A=ap(document.getElementById('rFrom').value), B=ap(document.getElementById('rTo').value);
+  const acSel=document.getElementById('rAc').value;
+  const ac=actype(S.fleet.find(x=>x.uid==acSel)?.type);
+  if(!A||!B||!ac) return;
+  const d=dist(A,B); const fair=fairPrice(d);
+  document.getElementById('rFair').textContent=fmt(fair);
+  // 若用户未手动改过价格，则跟随公道价预填
+  const priceEl=document.getElementById('rPrice');
+  if(!priceEl.value || Number(priceEl.value)===routeLastFair){ priceEl.value=fair; }
+  routeLastFair=fair;
+  let hint="";
+  if(A.code===B.code) hint="出发与到达不能相同。";
+  else if(d>ac.range) hint="⚠ 距离 "+d.toLocaleString()+"km 超出该机型航程 "+ac.range.toLocaleString()+"km，无法执飞。";
+  else hint="距离 "+d.toLocaleString()+"km，建议票价 "+fmt(fair)+"。";
+  document.getElementById('rHint').textContent=hint;
+}
+function createRoute(){
+  const from=document.getElementById('rFrom').value, to=document.getElementById('rTo').value;
+  const acu=parseInt(document.getElementById('rAc').value);
+  const freq=Math.max(1,Math.min(12,parseInt(document.getElementById('rFreq').value)||2));
+  const price=Math.max(50,parseInt(document.getElementById('rPrice').value)||800);
+  if(from===to){ toast("出发与到达不能相同"); return; }
+  const ac=S.fleet.find(x=>x.uid===acu);
+  if(!ac){ toast("请选择飞机"); return; }
+  if(ac.routeId){ toast("该飞机已在其他航线执飞"); return; }
+  const A=ap(from),B=ap(to); if(dist(A,B)>actype(ac.type).range){ toast("超出机型航程"); return; }
+  const id="R"+(S.routes.length+1)+"_"+S.day;
+  S.routes.push({id,from,to,ac:acu,price,freq,status:'active',lastPax:0,lastSeats:0,lastProfit:0});
+  ac.routeId=id;
+  pushLog("新开航线 "+from+"-"+to+"，票价 "+fmt(price)+"。","");
+  toast("航线已开通");
+  closeModal('routeModal'); save(); renderAll();
+}
+function openPrice(id){
+  const r=S.routes.find(x=>x.id===id); if(!r) return;
+  document.getElementById('pFreq').value=r.freq;
+  document.getElementById('pPrice').value=r.price;
+  const A=ap(r.from),B=ap(r.to); const fair=fairPrice(dist(A,B));
+  document.getElementById('pHint').textContent="公道价约 "+fmt(fair)+"；票价过高会显著降低上座率。";
+  document.getElementById('pSave').onclick=()=>{
+    r.freq=Math.max(1,Math.min(12,parseInt(document.getElementById('pFreq').value)||2));
+    r.price=Math.max(50,parseInt(document.getElementById('pPrice').value)||800);
+    pushLog("调整航线 "+r.from+"-"+r.to+"：班次 "+r.freq+"，票价 "+fmt(r.price)+"。","");
+    closeModal('priceModal'); save(); renderAll();
+  };
+  document.getElementById('priceModal').classList.add('on');
+}
+function toggleRoute(id){
+  const r=S.routes.find(x=>x.id===id); if(!r) return;
+  if(r.status==='active'){ r.status='paused'; const ac=S.fleet.find(f=>f.uid===r.ac); if(ac)ac.routeId=null; }
+  else { // 恢复需有可用飞机
+    let ac=S.fleet.find(f=>f.uid===r.ac && !f.routeId);
+    if(!ac) ac=S.fleet.find(f=>!f.routeId);
+    if(!ac){ toast("没有空闲飞机可指派"); return; }
+    r.ac=ac.uid; ac.routeId=r.id; r.status='active';
+  }
+  save(); renderAll();
+}
+function delRoute(id){
+  const r=S.routes.find(x=>x.id===id); if(!r) return;
+  const ac=S.fleet.find(f=>f.uid===r.ac); if(ac)ac.routeId=null;
+  S.routes=S.routes.filter(x=>x.id!==id);
+  pushLog("关闭航线 "+r.from+"-"+r.to+"。","");
+  save(); renderAll();
+}
+
+/* ============ 分享 / 存读档 ============ */
+function b64e(s){ return btoa(unescape(encodeURIComponent(s))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function b64d(s){ s=s.replace(/-/g,'+').replace(/_/g,'/'); return decodeURIComponent(escape(atob(s))); }
+
+function save(){ try{ localStorage.setItem('skyempire', JSON.stringify(S)); }catch(e){} }
+function loadLocal(){
+  try{ const raw=localStorage.getItem('skyempire'); if(raw){ S=JSON.parse(raw); normalize(); return true; } }catch(e){}
+  return false;
+}
+function normalize(){
+  // 兼容性补全
+  S.history=S.history||[]; S.ledger=S.ledger||[]; S.log=S.log||[]; S.research=S.research||{};
+  S.staff=S.staff||{pilot:6,mech:3,mkt:2}; S.ownedHubs=S.ownedHubs||[]; S.fleet=S.fleet||[]; S.routes=S.routes||[];
+  if(typeof S.loans!=='number') S.loans=0;
+  if(typeof S.fuelMult!=='number'){S.fuelMult=1;S.fuelMultDays=0;}
+}
+function shareLink(){
+  const payload=b64e(JSON.stringify(S));
+  const url=location.origin+location.pathname+"#s="+payload;
+  document.getElementById('shareUrl').value=url;
+  document.getElementById('shareModal').classList.add('on');
+  // 同时写入当前地址栏（无需分享码，直接发链接即可）
+  history.replaceState(null,'',"#s="+payload);
+}
+async function copyShare(){
+  const url=document.getElementById('shareUrl').value;
+  try{ await navigator.clipboard.writeText(url); toast("链接已复制，直接发给朋友即可"); }
+  catch(e){ document.getElementById('shareUrl').select(); document.execCommand('copy'); toast("链接已复制"); }
+}
+function loadFromHash(){
+  const h=location.hash;
+  if(h && h.indexOf('#s=')===0){
+    try{ const p=h.slice(3); S=JSON.parse(b64d(p)); normalize(); return true; }catch(e){ toast("分享链接解析失败，已开启新游戏"); }
+  }
+  return false;
+}
+function exportSave(){
+  const blob=new Blob([JSON.stringify(S)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='skyempire-save.json'; a.click(); toast("存档已导出");
+}
+function importSave(){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='.json';
+  inp.onchange=()=>{ const f=inp.files[0]; if(!f)return; const rd=new FileReader();
+    rd.onload=()=>{ try{ S=JSON.parse(rd.result); normalize(); save(); renderAll(); toast("存档已导入"); }catch(e){ toast("文件无效"); } };
+    rd.readAsText(f); };
+  inp.click();
+}
+
+function resetGame(){
+  if(!confirm("确定要重置游戏吗？当前进度将清空。")) return;
+  S=freshState(); uid=1; save(); location.hash=''; renderAll(); toast("已重置，开始新征程");
+}
+
+/* ============ 计时 ============ */
+function startTimer(){ stopTimer(); if(speed>0 && !S.over){ timer=setInterval(advanceDay, 2000/speed); } }
+function stopTimer(){ if(timer){ clearInterval(timer); timer=null; } }
+function setSpeed(s){ speed=s; document.querySelectorAll('.speedbtns button').forEach(b=>b.classList.toggle('on',+b.dataset.sp===s)); startTimer(); }
+
+/* ============ Over 弹窗 ============ */
+function openOverModal(){
+  let title=S.won?"🎉 通关！航空大亨":"💥 游戏结束";
+  let body=S.won?("你用 "+S.day+" 天将公司净资产做到 "+fmt(netWorth())+"，成为真正的天空帝国掌门人！")
+                :("公司资金严重透支，于第 "+S.day+" 天破产。再接再厉！");
+  const m=document.createElement('div'); m.className='modal-bg on';
+  m.innerHTML=`<div class="modal" style="text-align:center">
+    <h2>${title}</h2><p class="muted" style="font-size:15px;line-height:1.7">${body}</p>
+    <div class="actions" style="justify-content:center;margin-top:18px">
+      <button class="btn" onclick="this.closest('.modal-bg').remove();resetGame()">再玩一局</button>
+    </div></div>`;
+  document.body.appendChild(m);
+}
+
+/* ============ 事件绑定 ============ */
+document.getElementById('nav').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  b.classList.add('on'); document.getElementById('tab-'+b.dataset.tab).classList.add('on');
+  drawChart();
+});
+document.querySelectorAll('.speedbtns button').forEach(b=>b.onclick=()=>setSpeed(+b.dataset.sp));
+document.getElementById('btnSave').onclick=()=>{ save(); toast("进度已保存"); };
+document.getElementById('btnShare').onclick=shareLink;
+document.getElementById('shareCopy').onclick=copyShare;
+document.getElementById('shareExport').onclick=exportSave;
+document.getElementById('shareImport').onclick=importSave;
+document.getElementById('btnReset').onclick=resetGame;
+document.getElementById('btnBuyAircraft').onclick=()=>{ openModalBuy(); };
+document.getElementById('btnNewRoute').onclick=openRouteModal;
+document.getElementById('rFrom').onchange=updateRouteHint;
+document.getElementById('rTo').onchange=updateRouteHint;
+document.getElementById('rAc').onchange=updateRouteHint;
+document.getElementById('rCreate').onclick=createRoute;
+document.getElementById('hirePilot').onclick=()=>hire('pilot');
+document.getElementById('firePilot').onclick=()=>fire('pilot');
+document.getElementById('hireMech').onclick=()=>hire('mech');
+document.getElementById('fireMech').onclick=()=>fire('mech');
+document.getElementById('hireMkt').onclick=()=>hire('mkt');
+document.getElementById('fireMkt').onclick=()=>fire('mkt');
+document.getElementById('btnLoan').onclick=takeLoan;
+document.getElementById('btnRepay').onclick=repayLoan;
+
+function openModalBuy(){
+  const list=document.getElementById('buyAircraftList'); list.innerHTML='';
+  for(const t of AC_TYPES){
+    const div=document.createElement('div'); div.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px';
+    div.innerHTML=`<div><b>${t.name}</b><div class="muted" style="font-size:12px">${t.cls} · ${t.cap}人 · 航程${t.range.toLocaleString()}km · 燃油${t.fuel}$/km</div></div>
+      <div class="flex"><span style="margin-right:10px;font-weight:700">${fmt(t.price*1e6)}</span>
+      <button class="btn sm" ${S.money<t.price*1e6?'disabled':''} onclick="buyAircraft('${t.id}');closeModal('buyAircraftModal')">购买</button></div>`;
+    list.appendChild(div);
+  }
+  document.getElementById('buyAircraftModal').classList.add('on');
+}
+
+/* ============ 启动 ============ */
+function boot(){
+  if(!loadFromHash()){
+    if(!loadLocal()){ S=freshState(); pushLog("欢迎来到天空帝国！从第 1 天开始你的航空帝国之路。","good"); }
+  }
+  normalize();
+  // 修复 uid 计数
+  uid = S.fleet.reduce((m,f)=>Math.max(m,f.uid),0)+1;
+  renderAll();
+  save();
+  setSpeed(1);
+}
+boot();
+</script>
+</body>
+</html>
